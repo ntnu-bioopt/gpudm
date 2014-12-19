@@ -128,6 +128,9 @@ typedef struct{
 //reads chromophore choices etc from config file initialized elsewhere
 void gpudm_initialize(GPUDMParams *params, int samples, int bands, float *wlens);
 
+//doesn't read parameters from config file, uses constant parameters instead
+void gpudm_initialize_useconstants(GPUDMParams *params, int samples, int bands, float *wlens);
+
 //free gpu memory
 void gpudm_free(GPUDMParams *params);
 	
