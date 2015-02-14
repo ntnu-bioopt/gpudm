@@ -1,3 +1,10 @@
+//=======================================================================================================
+// Copyright 2015 Asgeir Bjorgan, Lise Lyngsnes Randeberg, Norwegian University of Science and Technology
+// Distributed under the MIT License.
+// (See accompanying file LICENSE or copy at
+// http://opensource.org/licenses/MIT)
+//=======================================================================================================
+
 #include "melanin.h"
 __global__ void skindataDeinit(float *muam, float *bvf, float *oxy, float *melanin_type, float muamStd, float bvfStd, float oxyStd, size_t pitch){
 	int ind = blockIdx.x*pitch+ threadIdx.x;

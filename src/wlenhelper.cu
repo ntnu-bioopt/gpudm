@@ -1,3 +1,11 @@
+//=======================================================================================================
+// Copyright 2015 Asgeir Bjorgan, Lise Lyngsnes Randeberg, Norwegian University of Science and Technology
+// Distributed under the MIT License.
+// (See accompanying file LICENSE or copy at
+// http://opensource.org/licenses/MIT)
+//=======================================================================================================
+
+
 #include "wlenhelper.h"
 using namespace std;
 

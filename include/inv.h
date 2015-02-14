@@ -1,3 +1,10 @@
+//=======================================================================================================
+//// Copyright 2015 Asgeir Bjorgan, Lise Lyngsnes Randeberg, Norwegian University of Science and Technology
+//// Distributed under the MIT License.
+//// (See accompanying file LICENSE or copy at
+//// http://opensource.org/licenses/MIT)
+////=======================================================================================================
+
 
 //invert muae from input reflectance
 __global__ void ReflIsoL2InvertMuae(float *muae, float *muse, float *muad, float *musd, float *gcol, float *lineData, size_t pitch, int startblockInd);

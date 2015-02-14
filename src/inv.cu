@@ -1,9 +1,16 @@
+//=======================================================================================================
+// Copyright 2015 Asgeir Bjorgan, Lise Lyngsnes Randeberg, Norwegian University of Science and Technology
+// Distributed under the MIT License.
+// (See accompanying file LICENSE or copy at
+// http://opensource.org/licenses/MIT)
+//=======================================================================================================
+
+
 #include "melanin.h"
 
 #define div13 1.0f/3.0f
 #include "inv.h"
 #define A 0.14386f
-//just be aware that this A is actually incorrect. The diffuse reflectance should also be calculated using Rd = gamma*(1-Rsp), but be also aware that the boundary conditions are just an approximation. This choice of A gives us a reasonably good approximation to monte carlo simulations. 
 
 //#define A 0.17f
 #define d1 0.0001f
