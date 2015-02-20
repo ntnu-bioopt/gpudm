@@ -37,8 +37,8 @@ int main(int argc, char *argv[]){
 
 
 	int lines = header.lines;
-	int bands = bands;
-	int samples = header.samples;
+	int bands = header.bands;
+	int samples = 1600;
 
 
 	//prepare gpudm arrays
@@ -50,7 +50,15 @@ int main(int argc, char *argv[]){
 	float *res_700 = new float[samples*lines*params.lsq_w700->fitting_numEndmembers];
 
 	for (int i=0; i < lines; i++){
-		float *lineRefl = data + i*samples*bands;
+		float *lineReflOrig = data + i*header.samples*bands;
+		float *lineRefl = new float[samples*bands]();
+		for (int j=0; j < samples; j++){
+			for (int k=0; k < bands; k++){
+				lineRefl[k*samples + j] = lineReflOrig[k*header.samples + j];
+			}
+		}
+	
+
 		gpudm_fit_reflectance(&params, lineRefl);
 
 		//result from interval around 500 nm
@@ -60,6 +68,7 @@ int main(int argc, char *argv[]){
 		//result from interval around 700 nm
 		float *res_line_700 = res_700 + samples*params.lsq_w700->fitting_numEndmembers*i;
 		gpudm_download_700res(&params, res_line_700);
+		delete [] lineRefl;
 	}
 
 	//write results to hyperspectral files
