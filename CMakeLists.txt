@@ -4,7 +4,7 @@ set(CMAKE_BUILD_TYPE Release)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-add_subdirectory(libchromophores)
+add_subdirectory(libchromophoreconfig)
 
 #CUDA
 find_package(CUDA)
