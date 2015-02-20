@@ -1,3 +1,10 @@
+//=======================================================================================================
+//// Copyright 2015 Asgeir Bjorgan, Lise Lyngsnes Randeberg, Norwegian University of Science and Technology
+//// Distributed under the MIT License.
+//// (See accompanying file LICENSE or copy at
+//// http://opensource.org/licenses/MIT)
+////=======================================================================================================
+
 #ifndef GPUDM_H_DEFINED
 #define GPUDM_H_DEFINED
 
@@ -127,6 +134,9 @@ typedef struct{
 //initialize GPUDMParams
 //reads chromophore choices etc from config file initialized elsewhere
 void gpudm_initialize(GPUDMParams *params, int samples, int bands, float *wlens);
+
+//doesn't read parameters from config file, uses constant parameters instead
+void gpudm_initialize_useconstants(GPUDMParams *params, int samples, int bands, float *wlens);
 
 //free gpu memory
 void gpudm_free(GPUDMParams *params);

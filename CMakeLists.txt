@@ -4,6 +4,8 @@ set(CMAKE_BUILD_TYPE Release)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+add_subdirectory(libchromophores)
+
 #CUDA
 find_package(CUDA)
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=sm_11 -Xptxas -v)

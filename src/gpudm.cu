@@ -1,3 +1,11 @@
+//=======================================================================================================
+// Copyright 2015 Asgeir Bjorgan, Lise Lyngsnes Randeberg, Norwegian University of Science and Technology
+// Distributed under the MIT License.
+// (See accompanying file LICENSE or copy at
+// http://opensource.org/licenses/MIT)
+//=======================================================================================================
+
+
 #include "gpudm.h"
 #include <iostream>
 #include <absorption_props.h>
@@ -28,6 +36,101 @@ void gpudm_free(GPUDMParams *params){
 	gnlsq_free(params->melMeth_lsq);
 }
 
+void gpudm_initialize_useconstants(GPUDMParams *params, int samples, int bands, float *wlens){
+	//int numIntervals = 4;
+	//_forwardRefls = new float[bands*numIntervals];
+	params->image_samples = samples;
+	params->image_bands = bands;
+
+	//melanin estimation properties
+	float startwlen = 730;
+	float endwlen = 820;
+	
+	params->melMeth_numIterations = 2;
+	params->melMeth_useCurveFromIterNumber = 3;
+	params->melMeth_startWlenInd = getStartInd(wlens, bands, startwlen);
+	params->melMeth_endWlenInd = getEndInd(wlens, bands, endwlen);
+	
+	//standard values for skin properties, for deinitialization
+	params->default_muam = 100;
+	params->default_bvf = 0.01;
+	params->default_oxy = 0.8;
+
+	//device array properties
+	params->gpu_threadsPerBlock = 160;
+	params->gpu_arrayByteWidth = params->gpu_threadsPerBlock*sizeof(float);
+	params->gpu_arrayHeight = params->image_samples*params->image_bands/params->gpu_threadsPerBlock;
+
+	//create buffers
+	cudaMallocPitch(&params->currRefl, &(params->gpu_pitch), params->gpu_arrayByteWidth, params->gpu_arrayHeight);
+
+	//skindata arrays
+	params->skinBase = new GPUSkinBase;
+	gpuskinbase_initialize(params->skinBase, params->image_samples, params->image_bands, params->gpu_arrayByteWidth, params->gpu_arrayHeight, wlens);
+
+	params->skinData = new GPUSkinData;
+	gpuskindata_initialize(params->skinData, params->gpu_arrayByteWidth, samples/params->gpu_threadsPerBlock, params->gpu_threadsPerBlock);
+
+	params->optProps = new GPUOpticalProps;
+	gpuopticalprops_initialize(params->optProps, params->gpu_arrayByteWidth, params->gpu_arrayHeight);
+
+	//absorption coefficient estimation properties
+	params->absfit_numIterations = 15;
+	
+	//melanin unmixing properties
+	float *melcurveHost = new float[params->image_samples*params->image_bands];
+	params->melMeth_factor = 0;
+	for (int i=params->melMeth_startWlenInd; i < params->melMeth_endWlenInd; i++){
+		float temp = pow(694.0f/wlens[i], 3.46);
+		params->melMeth_factor += temp*temp;
+		for (int j=0; j < params->image_samples; j++){
+			melcurveHost[i*params->image_samples + j] = temp;
+		}
+	}
+	params->melMeth_factor = 1.0f/params->melMeth_factor;
+	cudaMallocPitch(&(params->melMeth_melcurve), &(params->gpu_pitch), params->gpu_arrayByteWidth, params->gpu_arrayHeight);
+	cudaMemcpy2D(params->melMeth_melcurve, params->gpu_pitch, melcurveHost, params->gpu_arrayByteWidth, params->gpu_arrayByteWidth, params->gpu_arrayHeight, cudaMemcpyHostToDevice);
+	delete [] melcurveHost;
+
+
+	//chromophores to be used in the various fitting intervals and methods
+	Chromophores melchrom;
+	melchrom.setMel();
+	melchrom.setWat();
+	
+	Chromophores chrom450;
+	chrom450.setMel();
+	chrom450.setBil();
+	chrom450.setBet();
+	chrom450.setKonst();
+	
+	Chromophores chrom530;
+	chrom530.setMel();
+	chrom530.setKonst();
+
+	Chromophores chrom700;
+	chrom700.setMel();
+	chrom700.setWat();
+	chrom700.setFat();
+	chrom700.setKonst();
+
+
+	//lsqfitting parameters for each wavelength interval
+	params->lsq_w450 = new GNLSQParams;
+	params->lsq_w530 = new GNLSQParams;
+	params->lsq_w700 = new GNLSQParams;
+
+
+	gnlsq_initialize(params->lsq_w450, params->gpu_threadsPerBlock, samples, bands, chrom450, wlens, 460, 530);
+	
+	gnlsq_initialize(params->lsq_w530, params->gpu_threadsPerBlock, samples, bands, chrom530, wlens, 510, 590);
+	
+	gnlsq_initialize(params->lsq_w700, params->gpu_threadsPerBlock, samples, bands, chrom700, wlens, 690, 820);
+
+	//lsqfitting parameters for the melanin method
+	params->melMeth_lsq = new GNLSQParams;
+	gnlsq_initialize(params->melMeth_lsq, params->gpu_threadsPerBlock, samples, bands, melchrom, wlens, startwlen, endwlen);
+}
 
 
 void gpudm_initialize(GPUDMParams *params, int samples, int bands, float *wlens){

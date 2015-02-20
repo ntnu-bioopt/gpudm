@@ -5,19 +5,20 @@
 //// http://opensource.org/licenses/MIT)
 ////=======================================================================================================
 
-#include "melanin.h"
-#include <cmath>
-MelaninType MELANIN_TYPE = SVAASAND;
+#ifndef MUH_BLOOD_H_DEFINED
+#define MUH_BLOOD_H_DEFINED
 
-float melanin(float w){
-	switch(MELANIN_TYPE){
-		case EUMELANIN:
-			return exp(-kEu*(w - MELANIN_REFERENCE_WAVELENGTH)/MELANIN_REFERENCE_WAVELENGTH);
-		break;
-		case PHEOMELANIN:
-			return exp(-kPheo*(w - MELANIN_REFERENCE_WAVELENGTH)/MELANIN_REFERENCE_WAVELENGTH);
-		break;
-		default:
-			return pow(MELANIN_REFERENCE_WAVELENGTH*1.0/w, 3.46);
-	}
-}
+
+float muh_oxy_calc(float l);
+
+float muh_deoxy_calc(float l);
+
+float bilirub(float l);
+float methb(float l);
+float betacarot(float l);
+float betacarot_schwieter(float l);
+float water(float l);
+float HbCO(float l);
+float fat(float l);
+
+#endif
