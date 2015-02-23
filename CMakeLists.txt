@@ -13,7 +13,7 @@ cuda_compile(CUDA_O src/inv.cu src/base.cu src/gpudm.cu src/misc.cu src/wlenhelp
 cuda_add_library(gpudm ${CUDA_O})
 
 
-add_executable(gpudm-bin src/main.cpp src/readimage.cpp src/hyperspectral.cpp)
+add_executable(gpudm-bin src/main.cpp src/readimage.cpp)
 TARGET_LINK_LIBRARIES(gpudm-bin gpudm chromophoreconfig boost_system)
 
 #install

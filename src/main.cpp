@@ -9,6 +9,7 @@
 #include "gpudm.h"
 #include "parseconfig.h"
 #include "hyperspectral.h"
+#include <sstream>
 
 #include <iostream>
 using namespace std;
@@ -26,7 +27,7 @@ int main(int argc, char *argv[]){
 	char *filename = argv[1];
 	size_t offset;
 	HyspexHeader header;
-	readHeader(filename, &header);
+	hyperspectral_read_header(filename, &header);
 	
 	ImageSubset subset;
 	subset.startSamp = 0;
@@ -35,18 +36,16 @@ int main(int argc, char *argv[]){
 	subset.endLine = header.lines;
 	
 	float *data = new float[header.lines*header.samples*header.bands];
-	readImage(filename, &header, subset, data);
+	hyperspectral_read_image(filename, &header, subset, data);
 
 	float *wlens = new float[header.bands];
 	for (int i=0; i < header.bands; i++){
 		wlens[i] = header.wlens[i];
 	}
 
-
 	int lines = header.lines;
 	int bands = header.bands;
-	int samples = 1600;
-
+	int samples = header.samples;
 
 	//prepare gpudm arrays
 	GPUDMParams params;
@@ -55,16 +54,10 @@ int main(int argc, char *argv[]){
 	//prepare output arrays
 	float *res_530 = new float[samples*lines*params.lsq_w530->fitting_numEndmembers];
 	float *res_700 = new float[samples*lines*params.lsq_w700->fitting_numEndmembers];
+	float *res_mel = new float[samples*lines];
 
 	for (int i=0; i < lines; i++){
-		float *lineReflOrig = data + i*header.samples*bands;
-		float *lineRefl = new float[samples*bands]();
-		for (int j=0; j < samples; j++){
-			for (int k=0; k < bands; k++){
-				lineRefl[k*samples + j] = lineReflOrig[k*header.samples + j];
-			}
-		}
-	
+		float *lineRefl = data + i*samples*bands;
 
 		gpudm_fit_reflectance(&params, lineRefl);
 
@@ -75,24 +68,61 @@ int main(int argc, char *argv[]){
 		//result from interval around 700 nm
 		float *res_line_700 = res_700 + samples*params.lsq_w700->fitting_numEndmembers*i;
 		gpudm_download_700res(&params, res_line_700);
-		delete [] lineRefl;
+
+		//melanin result
+		float *res_line_mel = res_mel + samples*1*i;
+		gpudm_download_melanin(&params, res_line_mel);
 	}
 
 	//write results to hyperspectral files
-	Hyperspectral *hyp530res = new Hyperspectral(res_530, lines, samples, params.lsq_w530->fitting_numEndmembers, BIL);
-	hyp530res->writeToFile(string(argv[2]) + "_530res");
+	//parameters are in the sequence defined by the Chromophores class (see libchromophoreconfig)
+	
+	//530nm interval
+	string outfilename = string(argv[2]) + "_530res";
+	vector<string> bandnames;
+	vector<float> bandnums;
+	ostringstream *description = new ostringstream;
+	*description << "Dermal chromophore values extracted from " << wlens[params.lsq_w530->fitting_startWlenInd] << "-" << wlens[params.lsq_w530->fitting_endWlenInd] << "nm";
+	for (int i=0; i < params.lsq_w530->fitting_numEndmembers; i++){
+		bandnums.push_back(i);
+		bandnames.push_back(params.lsq_w530->fitting_chrom.getName(i));
+	}
+	hyperspectral_write_header(outfilename.c_str(), params.lsq_w530->fitting_numEndmembers, samples, lines, bandnums, description->str(), bandnames);
+	hyperspectral_write_image(outfilename.c_str(), params.lsq_w530->fitting_numEndmembers, samples, lines, res_530);
 
-	Hyperspectral *hyp700res = new Hyperspectral(res_700, lines, samples, params.lsq_w700->fitting_numEndmembers, BIL);
-	hyp700res->writeToFile(string(argv[2]) + "_700res");
-
+	//700nm interval
+	outfilename = string(argv[2]) + "_700res";
+	bandnames.clear();
+	bandnums.clear();
+	delete description;
+	description = new ostringstream;
+	*description << "Dermal chromophore values extracted from " << wlens[params.lsq_w700->fitting_startWlenInd] << "-" << wlens[params.lsq_w700->fitting_endWlenInd] << "nm";
+	for (int i=0; i < params.lsq_w700->fitting_numEndmembers; i++){
+		bandnums.push_back(i);
+		bandnames.push_back(params.lsq_w700->fitting_chrom.getName(i));
+	}
+	hyperspectral_write_header(outfilename.c_str(), params.lsq_w700->fitting_numEndmembers, samples, lines, bandnums, description->str(), bandnames);
+	hyperspectral_write_image(outfilename.c_str(), params.lsq_w700->fitting_numEndmembers, samples, lines, res_700);
+	
+	
+	//melanin values
+	outfilename = string(argv[2]) + "_melres";
+	bandnames.clear();
+	bandnums.clear();
+	delete description;
+	description = new ostringstream;
+	*description << "Epidermal melanin amount in terms of absorption in m-1 at 694 nm.";
+	bandnames.push_back("melanin");
+	bandnums.push_back(0);
+	hyperspectral_write_header(outfilename.c_str(), 1, samples, lines, bandnums, description->str(), bandnames);
+	hyperspectral_write_image(outfilename.c_str(), 1, samples, lines, res_700);
+	
 
 
 	delete [] res_530;
 	delete [] res_700;
+	delete [] res_mel;
 	delete [] data;
 
-	delete hyp530res;
-	delete hyp700res;
-
 	gpudm_free(&params);
-}
+}	
