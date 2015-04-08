@@ -31,16 +31,16 @@ Chromophores::Chromophores(){
 	hasfat = 0;
 	numEnd = 2;
 		
-	oxymax = readNumberSetting("visualization/chromophoreMaxVals", "chromophore", "oxyfrac");
-	deoxymax = readNumberSetting("visualization/chromophoreMaxVals", "chromophore", "deoxyfrac");
-	methbmax = readNumberSetting("visualization/chromophoreMaxVals", "chromophore", "methb");
-	bilmax = readNumberSetting("visualization/chromophoreMaxVals", "chromophore", "bilirubin");
-	betmax = readNumberSetting("visualization/chromophoreMaxVals", "chromophore", "betacarotene");
-	watmax = readNumberSetting("visualization/chromophoreMaxVals", "chromophore", "water");
-	cohbmax = readNumberSetting("visualization/chromophoreMaxVals", "chromophore", "cohb");
-	melmax = readNumberSetting("visualization/chromophoreMaxVals", "chromophore", "melanin");
-	konstmax = readNumberSetting("visualization/chromophoreMaxVals", "chromophore", "const");
-	fatmax = readNumberSetting("visualization/chromophoreMaxVals", "chromophore", "fat");
+	oxymax = 1;//readNumberSetting("visualization/chromophoreMaxVals", "chromophore", "oxyfrac");
+	deoxymax = 1;//readNumberSetting("visualization/chromophoreMaxVals", "chromophore", "deoxyfrac");
+	methbmax = 10;//readNumberSetting("visualization/chromophoreMaxVals", "chromophore", "methb");
+	bilmax = 10;//readNumberSetting("visualization/chromophoreMaxVals", "chromophore", "bilirubin");
+	betmax = 10;//readNumberSetting("visualization/chromophoreMaxVals", "chromophore", "betacarotene");
+	watmax = 10;//readNumberSetting("visualization/chromophoreMaxVals", "chromophore", "water");
+	cohbmax = 10;//readNumberSetting("visualization/chromophoreMaxVals", "chromophore", "cohb");
+	melmax = 2000;//readNumberSetting("visualization/chromophoreMaxVals", "chromophore", "melanin");
+	konstmax = 30;//readNumberSetting("visualization/chromophoreMaxVals", "chromophore", "const");
+	fatmax = 100;//readNumberSetting("visualization/chromophoreMaxVals", "chromophore", "fat");
 }
 
 std::string Chromophores::getName(int endmember){
