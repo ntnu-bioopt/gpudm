@@ -164,6 +164,7 @@ void gpudm_download_bandarray(GPUDMParams *params, float *gpu_array, float *host
 
 //run forward simulation, allocate outputRefl_host and return in this array
 void gpudm_forward_simulation(GPUDMParams *params, float **outputRefl_host);
+void gpudm_forward_simulation_singleres(GPUDMParams *params, GNLSQParams *gnlsq, float *refl);
 
 //functions for downloading results to host arrays
 void gpudm_download_melanin(GPUDMParams *params, float *host_muam);

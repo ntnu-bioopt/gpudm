@@ -8,7 +8,6 @@
 #include "readimage.h"
 #include "gpudm.h"
 #include "parseconfig.h"
-#include "hyperspectral.h"
 #include <sstream>
 
 #include <iostream>
@@ -45,7 +44,7 @@ int main(int argc, char *argv[]){
 
 	int lines = header.lines;
 	int bands = header.bands;
-	int samples = header.samples;
+	int samples = 1600; //due to some stupid decisions in threadsPerBlock and subsequent arrays
 
 	//prepare gpudm arrays
 	GPUDMParams params;
@@ -55,9 +54,16 @@ int main(int argc, char *argv[]){
 	float *res_530 = new float[samples*lines*params.lsq_w530->fitting_numEndmembers];
 	float *res_700 = new float[samples*lines*params.lsq_w700->fitting_numEndmembers];
 	float *res_mel = new float[samples*lines];
+	float *res_muad = new float[samples*lines*bands];
 
 	for (int i=0; i < lines; i++){
-		float *lineRefl = data + i*samples*bands;
+		float *lineReflEg = data + i*header.samples*bands;
+		float *lineRefl = new float[samples*bands]();
+		for (int j=0; j < bands; j++){
+			for (int k=0; k < header.samples; k++){
+				lineRefl[j*samples + k] = lineReflEg[j*header.samples + k];
+			}
+		}
 
 		gpudm_fit_reflectance(&params, lineRefl);
 
@@ -72,6 +78,12 @@ int main(int argc, char *argv[]){
 		//melanin result
 		float *res_line_mel = res_mel + samples*1*i;
 		gpudm_download_melanin(&params, res_line_mel);
+
+		//muad result
+		float *res_line_muad = res_muad + samples*bands*i;
+		gpudm_download_muad(&params, res_line_muad);
+
+		delete [] lineRefl;
 	}
 
 	//write results to hyperspectral files
@@ -116,6 +128,20 @@ int main(int argc, char *argv[]){
 	bandnums.push_back(0);
 	hyperspectral_write_header(outfilename.c_str(), 1, samples, lines, bandnums, description->str(), bandnames);
 	hyperspectral_write_image(outfilename.c_str(), 1, samples, lines, res_700);
+
+	//muad
+	outfilename = string(argv[2]) + "_muadres";
+	bandnames.clear();
+	bandnums.clear();
+	delete description;
+	description = new ostringstream;
+	*description << "Derived dermal absorption coefficients.";
+	for (int i=0; i < bands; i++){
+		bandnums.push_back(wlens[i]);
+		bandnames.push_back("wavelength");
+	}
+	hyperspectral_write_header(outfilename.c_str(), bands, samples, lines, bandnums, description->str(), bandnames);
+	hyperspectral_write_image(outfilename.c_str(), bands, samples, lines, res_muad);
 	
 
 
