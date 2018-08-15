@@ -1,0 +1,101 @@
+<config>
+	<inversion>
+		<melanin>
+			<wavelengthInterval>
+				<start>730</start>
+				<end>830</end>
+			</wavelengthInterval>
+			<chromophores>
+				<chromophore>melanin</chromophore>
+				<chromophore>water</chromophore>
+			</chromophores>
+
+			<initialValues>
+				<oxy>0.8</oxy>
+				<bvf>0.01</bvf>
+				<muam694>100</muam694>
+			</initialValues>
+			<iterations>2</iterations>
+			<useMelaninCurveFromIterNum>3</useMelaninCurveFromIterNum>
+		</melanin>
+		<dermis>
+			<interval450>
+				<wavelengthInterval>
+					<start>460</start>
+					<end>530</end>
+				</wavelengthInterval>
+				<chromophores>
+					<chromophore>melanin</chromophore>
+					<chromophore>bilirubin</chromophore>
+					<chromophore>betacarotene</chromophore>
+					<chromophore>const</chromophore>
+				</chromophores>
+			</interval450>
+			<interval530>
+				<wavelengthInterval>
+					<start>510</start>
+					<end>590</end>
+				</wavelengthInterval>
+				<chromophores>
+					<chromophore>melanin</chromophore>
+					<chromophore>const</chromophore>
+				</chromophores>
+			</interval530>
+			<interval700>
+				<wavelengthInterval>
+					<start>690</start>
+					<end>820</end>
+				</wavelengthInterval>
+				<chromophores>
+					<chromophore>melanin</chromophore>
+					<chromophore>water</chromophore>
+					<chromophore>fat</chromophore>
+					<chromophore>const</chromophore>
+				</chromophores>
+			</interval700>
+		</dermis>
+		<threadsPerBlock>160</threadsPerBlock>
+	</inversion>
+	<calibration>
+		<standardBand>100</standardBand>
+		<bufferSize>4000</bufferSize>
+		<startLineChecking>200</startLineChecking>
+		<reflectanceStdStartLine>400</reflectanceStdStartLine>
+		<meanCompThreshold>0.01</meanCompThreshold>
+		<calCalcLag>100</calCalcLag>
+	</calibration>
+	<visualization>
+		<imageViewerBufferSize>2000</imageViewerBufferSize>
+		<chromophoreMaxVals>
+			<chromophore type="oxyfrac">1</chromophore>
+			<chromophore type="deoxyfrac">1</chromophore>
+			<chromophore type="melanin">2000</chromophore>
+			<chromophore type="bilirubin">10</chromophore>
+			<chromophore type="betacarotene">10</chromophore>
+			<chromophore type="methb">10</chromophore>
+			<chromophore type="const">30</chromophore>
+			<chromophore type="water">10</chromophore>
+			<chromophore type="cohb">10</chromophore>
+			<chromophore type="bvf">0.2</chromophore>
+			<chromophore type="oxy">1</chromophore>
+			<chromophore type="fat">100</chromophore>
+		</chromophoreMaxVals>
+		<chromophoreMinVals>
+			<chromophore type="bvf">0</chromophore>
+			<chromophore type="oxy">0</chromophore>
+		</chromophoreMinVals>
+		<windowSize>
+			<height>720</height>
+			<width>450</width>
+		</windowSize>
+		<defaultRGBBands>
+			<red>55</red>
+			<green>41</green>
+			<blue>12</blue>
+		</defaultRGBBands>
+	</visualization>
+	<fileOutput>
+		<initialBufferSize>500</initialBufferSize>
+	</fileOutput>
+</config>
+

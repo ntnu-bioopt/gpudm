@@ -5,10 +5,12 @@ set(CMAKE_BUILD_TYPE Release)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 add_subdirectory(libchromophoreconfig)
+include_directories(libchromophoreconfig)
+configure_file(configfile.xml.in configfile.xml @ONLY)
 
 #CUDA
 find_package(CUDA)
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=sm_11 -Xptxas -v)
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}; -Xptxas -v)
 cuda_compile(CUDA_O src/inv.cu src/base.cu src/gpudm.cu src/misc.cu src/wlenhelper.cu)
 cuda_add_library(gpudm ${CUDA_O})
 
