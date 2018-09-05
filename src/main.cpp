@@ -15,11 +15,16 @@ using namespace std;
 
 int main(int argc, char *argv[]){
 	if (argc < 3){
-		cout << "Usage: " << argv[0] << " infilename outfilename" << endl;
+		cout << "Usage: " << argv[0] << " infilename outfilename [path to config file (optional, configfile.xml in current folder otherwise assumed)]" << endl;
 		exit(1);
 	}
 
-	readConfigFile("configfile.xml");
+	std::string configpath = "configfile.xml";
+	if (argc > 3){
+		configpath = argv[3];
+	}
+
+	readConfigFile(configpath);
 
 
 	//read image to BIL-interleaved float-array
@@ -27,13 +32,13 @@ int main(int argc, char *argv[]){
 	size_t offset;
 	HyspexHeader header;
 	hyperspectral_read_header(filename, &header);
-	
+
 	ImageSubset subset;
 	subset.startSamp = 0;
 	subset.endSamp = header.samples;
 	subset.startLine = 0;
 	subset.endLine = header.lines;
-	
+
 	float *data = new float[header.lines*header.samples*header.bands];
 	hyperspectral_read_image(filename, &header, subset, data);
 
@@ -44,7 +49,7 @@ int main(int argc, char *argv[]){
 
 	int lines = header.lines;
 	int bands = header.bands;
-	int samples = 1600; //due to some stupid decisions in threadsPerBlock and subsequent arrays
+	int samples = 1600; //due to some stupid decisions in threadsPerBlock and subsequent arrays, this is fixed regardless of image width
 
 	//prepare gpudm arrays
 	GPUDMParams params;
@@ -88,7 +93,7 @@ int main(int argc, char *argv[]){
 
 	//write results to hyperspectral files
 	//parameters are in the sequence defined by the Chromophores class (see libchromophoreconfig)
-	
+
 	//530nm interval
 	string outfilename = string(argv[2]) + "_530res";
 	vector<string> bandnames;
@@ -115,8 +120,8 @@ int main(int argc, char *argv[]){
 	}
 	hyperspectral_write_header(outfilename.c_str(), params.lsq_w700->fitting_numEndmembers, samples, lines, bandnums, description->str(), bandnames);
 	hyperspectral_write_image(outfilename.c_str(), params.lsq_w700->fitting_numEndmembers, samples, lines, res_700);
-	
-	
+
+
 	//melanin values
 	outfilename = string(argv[2]) + "_melres";
 	bandnames.clear();
@@ -142,7 +147,7 @@ int main(int argc, char *argv[]){
 	}
 	hyperspectral_write_header(outfilename.c_str(), bands, samples, lines, bandnums, description->str(), bandnames);
 	hyperspectral_write_image(outfilename.c_str(), bands, samples, lines, res_muad);
-	
+
 
 
 	delete [] res_530;
